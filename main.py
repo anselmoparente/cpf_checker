@@ -61,40 +61,45 @@ def execute_sql(sql, values, return_id=False):
 
 
 def validator(cpf):
-    # Retira apenas os dígitos do CPF, ignorando os caracteres especiais
-    numbers = [int(digito) for digito in cpf if digito.isdigit()]
+    # Removes only the CPF digits, ignoring special characters
+    numbers = [int(digit) for digit in cpf if digit.isdigit()]
 
-    formatacao = False
-    quant_digitos = False
-    validacao1 = False
-    validacao2 = False
+    formatted = False
+    num_digits = False
+    first_validation = False
+    second_validation = False
 
-    # Verifica a estrutura do CPF (111.222.333-44)
+    # Checks the structure of the CPF (111.222.333-44)
     if re.match(r'\d{3}\.\d{3}\.\d{3}-\d{2}', cpf):
-        formatacao = True
+        formatted = True
 
-    if len(numeros) == 11:
-        quant_digitos = True
+    # Rules for CPF Validation
+    if len(numbers) == 11:
+        num_digits = True
 
-        soma_produtos = sum(a * b for a, b in zip(numeros[0:9], range(10, 1, -1)))
-        digito_esperado = (soma_produtos * 10 % 11) % 10
-        if numeros[9] == digito_esperado:
-            validacao1 = True
+        first_sum_product = sum(a * b for a, b in zip(numbers[0:9], range(10, 1, -1)))
+        first_expected_digit = (first_sum_product * 10 % 11) % 10
+        if numbers[9] == first_expected_digit:
+            first_validation = True
 
-        soma_produtos1 = sum(a * b for a, b in zip(numeros[0:10], range(11, 1, -1)))
-        digito_esperado1 = (soma_produtos1 * 10 % 11) % 10
-        if numeros[10] == digito_esperado1:
-            validacao2 = True
+        second_sum_product = sum(a * b for a, b in zip(numbers[0:10], range(11, 1, -1)))
+        second_expected_digit = (second_sum_product * 10 % 11) % 10
+        if numbers[10] == second_expected_digit:
+            second_validation = True
 
-        if quant_digitos == True and formatacao == True and validacao1 == True and validacao2 == True:
-            print(f"O CPF {cpf} é válido.")
+        if num_digits and formatted and first_validation and second_validation:
+            return True
         else:
-            print(f"O CPF {cpf} não é válido... Tente outro CPF...")
+            return False
 
     else:
-        print(print(f"O CPF {cpf} não é válido... Tente outro CPF..."))
+        return False
+
 
 if __name__ == '__main__':
-    sql = '''select * from associados'''
+    sql = '''select nome_associado, data_nascimento, cpf, matricula from associados order by nome_associado'''
 
     associados = query_db(sql)
+    print(associados)
+
+

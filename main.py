@@ -2,6 +2,7 @@ import psycopg2 as psycopg2
 from dotenv import load_dotenv
 import os
 import re
+import csv
 
 
 def connect_db():
@@ -69,8 +70,8 @@ def validator(cpf):
     first_validation = False
     second_validation = False
 
-    # Checks the structure of the CPF (111.222.333-44)
-    if re.match(r'\d{3}\.\d{3}\.\d{3}-\d{2}', cpf):
+    # Checks the structure of the CPF (111222333-44)
+    if re.match(r'\d{9}-\d{2}', cpf):
         formatted = True
 
     # Rules for CPF Validation
@@ -98,8 +99,26 @@ def validator(cpf):
 
 if __name__ == '__main__':
     sql = '''select nome_associado, data_nascimento, cpf, matricula from associados order by nome_associado'''
-
     associados = query_db(sql)
-    print(associados)
 
+    cpf_invalid = []
+    header = ('nome_associado', 'data_nascimento', 'cpf', 'matricula')
+    cpf_invalid.append(header)
 
+    for associado in associados:
+        cpf = associado[2]
+
+        if cpf is not None and cpf != '':
+            isValid = validator(cpf)
+            if not isValid:
+                cpf_invalid.append(associado)
+
+    file_name = 'associados com o cpf inválido.csv'
+
+    with open(file_name, mode='w', newline='', encoding='utf-8') as csv_file:
+        write_csv = csv.writer(csv_file)
+
+        for line in cpf_invalid:
+            write_csv.writerow(line)
+
+    print(f'Arquivo {file_name} criado com sucesso!')
